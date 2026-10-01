@@ -3,8 +3,6 @@
 set -eu
 
 ARCH=$(uname -m)
-UPSTREAM=https://github.com/KytyPS5/KytyPS5.git
-INSTALL_PREFIX=/usr/lib/kytyps5
 
 echo "Installing package dependencies..."
 echo "---------------------------------------------------------------"
@@ -27,14 +25,11 @@ pacman -Syu --noconfirm \
     libxtst           \
     lld               \
     lxqt-qtplugin     \
-    mesa              \
     ninja             \
     pkgconf           \
-    qt6-base          \
     qt6ct             \
     qt6-imageformats  \
     qt6-wayland       \
-    systemd-libs      \
     vulkan-headers    \
     vulkan-icd-loader \
     wayland           \
@@ -46,7 +41,7 @@ get-debloated-pkgs --add-common --prefer-nano libdecor-mini
 
 echo "Building KytyPS5 from source..."
 echo "---------------------------------------------------------------"
-git clone "$UPSTREAM" ./kyty && (
+git clone https://github.com/KytyPS5/KytyPS5.git ./kyty && (
 	cd ./kyty
 
 	# Build the latest stable tag, nightly builds are not used
@@ -55,15 +50,13 @@ git clone "$UPSTREAM" ./kyty && (
 	git submodule update --init --recursive
 	echo "${TAG#KytyPS5-}" > ~/version
 
-	patch -p1 < ../patches/0001-launcher-use-xdg-base-directories.patch
-	patch -p1 < ../patches/0002-mainDialog.cpp-use-posix-sh-for-the-run-script.patch
-	patch -p1 < ../patches/0003-mainDialog.cpp-honour-KYTY_APP_LAUNCHER.patch
+	git apply ../patches/*.patch
 
 	cmake -B ./build . -GNinja -Wno-dev \
-		-DCMAKE_BUILD_TYPE=Release      \
-		-DCMAKE_C_COMPILER=clang        \
-		-DCMAKE_CXX_COMPILER=clang++    \
-		-DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX"
+		-DCMAKE_BUILD_TYPE=Release   \
+		-DCMAKE_C_COMPILER=clang     \
+		-DCMAKE_CXX_COMPILER=clang++ \
+		-DCMAKE_INSTALL_PREFIX=/usr/lib/kytyps5
 	cmake --build ./build --target launcher --parallel "$(nproc)"
 	cmake --install ./build
 )
