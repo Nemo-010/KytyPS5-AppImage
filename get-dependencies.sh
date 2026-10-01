@@ -46,19 +46,25 @@ get-debloated-pkgs --add-common --prefer-nano libdecor-mini
 
 echo "Building KytyPS5 from source..."
 echo "---------------------------------------------------------------"
-# Latest stable upstream release, nightly builds are not used
-TAG=$(wget -qO- https://api.github.com/repos/KytyPS5/KytyPS5/releases/latest \
-      | grep -m 1 '"tag_name"' | cut -d '"' -f 4)
+ROOT="$PWD"
+
+git clone "$UPSTREAM" ./kyty
+cd ./kyty
+
+# Build the latest stable tag, nightly builds are not used
+git fetch --tags origin
+TAG=$(git tag --sort=-v:refname | head -1)
+git checkout "$TAG"
+git submodule update --init --recursive
 echo "${TAG#KytyPS5-}" > ~/version
 
-git clone --recursive --branch "$TAG" "$UPSTREAM" ./kyty
-git -C ./kyty apply "$PWD/patches/xdg-base-dirs.patch"
+git apply "$ROOT/patches/xdg-base-dirs.patch"
 
-cmake -S ./kyty -B ./kyty/_Build/linux -G Ninja \
-    -DCMAKE_BUILD_TYPE=Release                  \
-    -DCMAKE_C_COMPILER=clang                    \
-    -DCMAKE_CXX_COMPILER=clang++                \
+cmake -S . -B _Build/linux -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release      \
+    -DCMAKE_C_COMPILER=clang        \
+    -DCMAKE_CXX_COMPILER=clang++    \
     -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX"
 
-cmake --build ./kyty/_Build/linux --target launcher --parallel "$(nproc)"
-cmake --install ./kyty/_Build/linux
+cmake --build _Build/linux --target launcher --parallel "$(nproc)"
+cmake --install _Build/linux
