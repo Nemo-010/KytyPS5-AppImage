@@ -57,6 +57,7 @@ git clone "$UPSTREAM" ./kyty && (
 
 	patch -p1 < ../patches/0001-launcher-use-xdg-base-directories.patch
 	patch -p1 < ../patches/0002-mainDialog.cpp-use-posix-sh-for-the-run-script.patch
+	patch -p1 < ../patches/0003-mainDialog.cpp-honour-KYTY_APP_LAUNCHER.patch
 
 	cmake -B ./build . -GNinja -Wno-dev \
 		-DCMAKE_BUILD_TYPE=Release      \
