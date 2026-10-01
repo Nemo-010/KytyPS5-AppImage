@@ -1,3 +1,7 @@
+# Use the XDG base directories for the launcher config, the compatibility
+# database, cheat patches and the emulator writable data instead of writing
+# next to the binaries. Adds src/launcher/include/appPaths.h.
+#
 diff --git a/src/launcher/include/appPaths.h b/src/launcher/include/appPaths.h
 new file mode 100644
 index 0000000..92120d9

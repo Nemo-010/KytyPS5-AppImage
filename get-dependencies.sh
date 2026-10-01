@@ -55,7 +55,7 @@ git clone "$UPSTREAM" ./kyty && (
 	git submodule update --init --recursive
 	echo "${TAG#KytyPS5-}" > ~/version
 
-	patch -p1 < ../patches/xdg-base-dirs.patch
+	patch -p1 < ../patches/0001-launcher-use-xdg-base-directories.patch
 
 	cmake -B ./build . -GNinja -Wno-dev \
 		-DCMAKE_BUILD_TYPE=Release      \
