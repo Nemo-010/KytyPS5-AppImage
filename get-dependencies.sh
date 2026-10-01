@@ -46,25 +46,22 @@ get-debloated-pkgs --add-common --prefer-nano libdecor-mini
 
 echo "Building KytyPS5 from source..."
 echo "---------------------------------------------------------------"
-ROOT="$PWD"
+git clone "$UPSTREAM" ./kyty && (
+	cd ./kyty
 
-git clone "$UPSTREAM" ./kyty
-cd ./kyty
+	# Build the latest stable tag, nightly builds are not used
+	TAG=$(git tag --list 'KytyPS5-*' --sort=-v:refname | head -n 1)
+	git checkout "$TAG"
+	git submodule update --init --recursive
+	echo "${TAG#KytyPS5-}" > ~/version
 
-# Build the latest stable tag, nightly builds are not used
-git fetch --tags origin
-TAG=$(git tag --sort=-v:refname | head -1)
-git checkout "$TAG"
-git submodule update --init --recursive
-echo "${TAG#KytyPS5-}" > ~/version
+	patch -p1 < ../patches/xdg-base-dirs.patch
 
-git apply "$ROOT/patches/xdg-base-dirs.patch"
-
-cmake -S . -B _Build/linux -G Ninja \
-    -DCMAKE_BUILD_TYPE=Release      \
-    -DCMAKE_C_COMPILER=clang        \
-    -DCMAKE_CXX_COMPILER=clang++    \
-    -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX"
-
-cmake --build _Build/linux --target launcher --parallel "$(nproc)"
-cmake --install _Build/linux
+	cmake -B ./build . -GNinja -Wno-dev \
+		-DCMAKE_BUILD_TYPE=Release      \
+		-DCMAKE_C_COMPILER=clang        \
+		-DCMAKE_CXX_COMPILER=clang++    \
+		-DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX"
+	cmake --build ./build --target launcher --parallel "$(nproc)"
+	cmake --install ./build
+)
